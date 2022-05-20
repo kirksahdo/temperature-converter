@@ -6,9 +6,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def __init__(self) -> None:
         super().__init__()
-        self.setupUi()
+        self.setup_ui()
 
-    def setupUi(self) -> None:
+    def setup_ui(self) -> None:
         self.setObjectName("MainWindow")
         self.resize(512, 523)
         self.setStyleSheet("#header{\n"
@@ -237,70 +237,77 @@ class MainWindow(QtWidgets.QMainWindow):
         self.input_rankine.setFont(font)
         self.input_rankine.setText("")
         self.input_rankine.setObjectName("input_rankine")
+
+        #Source
+        self.reg_exp_validator = QtGui.QRegularExpressionValidator(QtCore.QRegularExpression("[+-]?\\d*[\\.,]?\\d+"))
+        self.input_rankine.setValidator(self.reg_exp_validator)
+        self.input_celcius.setValidator(self.reg_exp_validator)
+        self.input_fahrenheit.setValidator(self.reg_exp_validator)
+        self.input_kelvin.setValidator(self.reg_exp_validator)
+
         self.horizontalLayout_10.addWidget(self.input_rankine)
         self.horizontalLayout_6.addWidget(self.frame_15)
         self.verticalLayout.addWidget(self.frame_5)
         self.setCentralWidget(self.centralwidget)
 
-        self.retranslateUi()
-        self.setEvents()
+        self.retranslate_ui()
+        self.set_events()
         QtCore.QMetaObject.connectSlotsByName(self)
 
-    def setEvents(self) -> None:
+    def set_events(self) -> None:
         self.input_celcius.textEdited.connect(self.celcius_changed)
         self.input_fahrenheit.textEdited.connect(self.fahrenheit_changed)
         self.input_kelvin.textEdited.connect(self.kelvin_changed)
         self.input_rankine.textEdited.connect(self.rankine_changed)
 
     def celcius_changed(self, text: str) -> None:
-        text = MainWindow.remove_not_number(text)
+        if self.check_input_incongruities(text):
+            return
         temperature = MainWindow.get_numeric_text(text)
-        self.input_celcius.setText(text)
-        self.input_fahrenheit.setText(f"{converter.celcius_to_fahrenheit(temperature)}")
-        self.input_rankine.setText(f"{converter.celcius_to_rankine(temperature)}")
-        self.input_kelvin.setText(f"{converter.celcius_to_kelvin(temperature)}")
+        self.input_fahrenheit.setText(f"{converter.celcius_to_fahrenheit(temperature):.2f}")
+        self.input_rankine.setText(f"{converter.celcius_to_rankine(temperature):.2f}")
+        self.input_kelvin.setText(f"{converter.celcius_to_kelvin(temperature):.2f}")
 
     def fahrenheit_changed(self, text: str) -> None:
-        text = MainWindow.remove_not_number(text)
+        if self.check_input_incongruities(text):
+            return
         temperature = MainWindow.get_numeric_text(text)
-        self.input_fahrenheit.setText(text)
-        self.input_celcius.setText(f"{converter.fahrenheit_to_celcius(temperature)}")
-        self.input_rankine.setText(f"{converter.fahrenheit_to_rankine(temperature)}")
-        self.input_kelvin.setText(f"{converter.fahrenheit_to_kelvin(temperature)}")
+        self.input_celcius.setText(f"{converter.fahrenheit_to_celcius(temperature):.2f}")
+        self.input_rankine.setText(f"{converter.fahrenheit_to_rankine(temperature):.2f}")
+        self.input_kelvin.setText(f"{converter.fahrenheit_to_kelvin(temperature):.2f}")
 
     def kelvin_changed(self, text: str) -> None:
-        text = MainWindow.remove_not_number(text)
+        if self.check_input_incongruities(text):
+            return
         temperature = MainWindow.get_numeric_text(text)
-        self.input_kelvin.setText(text)
-        self.input_celcius.setText(f"{converter.kelvin_to_celcius(temperature)}")
-        self.input_rankine.setText(f"{converter.kelvin_to_rankine(temperature)}")
-        self.input_fahrenheit.setText(f"{converter.kelvin_to_farenheit(temperature)}")
+        self.input_celcius.setText(f"{converter.kelvin_to_celcius(temperature):.2f}")
+        self.input_rankine.setText(f"{converter.kelvin_to_rankine(temperature):.2f}")
+        self.input_fahrenheit.setText(f"{converter.kelvin_to_farenheit(temperature):.2f}")
 
     def rankine_changed(self, text: str) -> None:
-        text = MainWindow.remove_not_number(text)
+        if self.check_input_incongruities(text):
+            return
         temperature = MainWindow.get_numeric_text(text)
-        self.input_rankine.setText(text)
-        self.input_celcius.setText(f"{converter.rankine_to_celcius(temperature)}")
-        self.input_kelvin.setText(f"{converter.rankine_to_kelvin(temperature)}")
-        self.input_fahrenheit.setText(f"{converter.rankine_to_fahrenheit(temperature)}")
+        self.input_celcius.setText(f"{converter.rankine_to_celcius(temperature):.2f}")
+        self.input_kelvin.setText(f"{converter.rankine_to_kelvin(temperature):.2f}")
+        self.input_fahrenheit.setText(f"{converter.rankine_to_fahrenheit(temperature):.2f}")
+
+    def clear_all_inputs(self):
+        self.input_celcius.setText("")
+        self.input_fahrenheit.setText("")
+        self.input_kelvin.setText("")
+        self.input_rankine.setText("")
 
 
-    @staticmethod
-    def remove_not_number(text: str) -> float:
-        text = "".join([char for char in text if char.isnumeric()])
+    def check_input_incongruities(self, text: str) -> bool:
         if len(text.strip()) == 0:
-            text = "0"
-        return text
+            self.clear_all_inputs()
+            return True
+        if len(text) == 1 and (text[0] == "-" or text[0] == "+"):
+            return True
+        return False
 
-    @staticmethod
-    def get_numeric_text(text: str) -> float:
-        if len(text.strip()) == 0:
-            text = "0"
-        number = float(text)
-        return number
-
-
-    def retranslateUi(self):
+    def retranslate_ui(self):
         _translate = QtCore.QCoreApplication.translate
         self.setWindowTitle(_translate("MainWindow", "Temperature Converter"))
         self.header_scale.setText(_translate("MainWindow", "Scale"))
@@ -309,3 +316,22 @@ class MainWindow(QtWidgets.QMainWindow):
         self.label_fahrenheit.setText(_translate("MainWindow", "Fahrenheit"))
         self.label_kelvin.setText(_translate("MainWindow", "Kelvin"))
         self.label_rankine.setText(_translate("MainWindow", "Rankine"))
+    
+    @staticmethod
+    def remove_not_number(text: str) -> float:
+        char = text[-1:]
+        text = text[:-1]
+        if char == ".":
+            if text.__contains__("."):
+                return text
+            if len(text) > 0:
+                return text + char
+            return text
+        if not char.isnumeric():
+            return text
+        return text + char
+
+    @staticmethod
+    def get_numeric_text(text: str) -> float:
+        number = float(text)
+        return number
